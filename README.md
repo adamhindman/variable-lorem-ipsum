@@ -1,1 +1,1 @@
-# variable-lorem-ipsum
+# Variable length lorem ipsum plugin
