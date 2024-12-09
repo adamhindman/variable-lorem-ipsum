@@ -42,16 +42,6 @@ if (closeAfterLabel && closeAfterCheckbox) {
   });
 }
 
-onmessage = (event) => {
-  // console.log('onmessage closeAfter: ', event.data.pluginMessage.closeAfter)
-  // console.log('onmessage addPunctuation: ', event.data.pluginMessage.addPunctuation)  
-}
-
-window.addEventListener("load", ()=>{
-  // console.log('window load close: ', closeAfterCheckbox.checked);
-  // console.log('window load punc: ', addPunctuationCheckbox.checked);
-})
-
 if (button) {
   button.addEventListener("click", () => {
     parent.postMessage({ pluginMessage: { type: 'replace-text', inValue:input.value } }, '*')    
