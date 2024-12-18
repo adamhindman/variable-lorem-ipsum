@@ -1,0 +1,16 @@
+Variable Length Lorem Ipsum 
+
+Specify a range of lengths for your lorem ipsum text
+
+Most Figma lorem ipsum plugins let you specify a single number for word count. However, sometimes you want to specify a range instead, to introduce variability, and create more realistic results (realistic for lorem ipsum text, that is)
+
+Features:
+Generates lorem ipsum text with the option of varied lengths.
+Enter a single number (e.g., "10") for fixed word count or a range (e.g., "5-10") for random variation within limits.
+Optionally add punctuation for generated text (default: off).
+Optionally auto-close the plugin after generating text (default: off).
+Supports your system setting for light or dark mode.
+
+Roadmap:
+Save user preferences for future sessions.
+Allow custom text input for generation.
