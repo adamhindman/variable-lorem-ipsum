@@ -1,191 +1,333 @@
 <div id="widget">
-  <div id="instructions">
-    <p id="overview">Replaces selected text with lorem ipsum. Enter a single number to generate exactly that many words, or a range (ex: 1-10) to generate a random number of words.</p>
-  </div>
-  <div id="input-area">
-    <input type="text" pattern="[0-9\-]*" value="1-10" title="Please enter only numbers and hyphens." id="input" />
-    <button id="button" type="submit">Generate</button>
-  </div>
-  <div id="options-area">
-    <form>
-      <label class="form-control" for="closeAfterCheckbox">
-        <input type="checkbox" id="closeAfterCheckbox" />
-        Close after generating text
-      </label>
-      <label class="form-control" for="addPunctuationCheckbox">
-        <input type="checkbox" id="addPunctuationCheckbox" />
-        Add punctuation
-      </label>
-    </form>
-  </div>
+    <div id="instructions">
+        <p id="overview">
+            Replaces selected text with lorem ipsum. Enter a single number to
+            generate exactly that many words, or a range (ex: 1-10) to generate
+            a random number of words.
+        </p>
+    </div>
+    <div id="input-area">
+        <input
+            type="text"
+            pattern="[0-9\-]*"
+            value="1-10"
+            title="Please enter only numbers and hyphens."
+            id="input"
+        />
+        <button id="button" type="submit">Generate</button>
+    </div>
+    <div id="options-area">
+        <form>
+            <label class="form-control" for="closeAfterCheckbox">
+                <input type="checkbox" id="closeAfterCheckbox" />
+                Close after generating text
+            </label>
+            <label class="form-control" for="addPunctuationCheckbox">
+                <input type="checkbox" id="addPunctuationCheckbox" />
+                Add punctuation
+            </label>
+        </form>
+    </div>
 </div>
 <script>
+    const button = document.querySelector("#button");
+    const input = document.querySelector("#input");
+    const closeAfterCheckbox = document.querySelector("#closeAfterCheckbox");
+    const closeAfterLabel = closeAfterCheckbox.closest("label");
+    const addPunctuationCheckbox = document.querySelector(
+        "#addPunctuationCheckbox",
+    );
+    const addPunctuationLabel = addPunctuationCheckbox.closest("label");
 
-const button = document.querySelector("#button");
-const input = document.querySelector("#input");
-const closeAfterCheckbox = document.querySelector("#closeAfterCheckbox");
-const closeAfterLabel = closeAfterCheckbox.closest("label");
-const addPunctuationCheckbox = document.querySelector("#addPunctuationCheckbox")
-const addPunctuationLabel = addPunctuationCheckbox.closest("label");
+    // Debug element to show logs
+    const debugDiv = document.createElement("div");
+    debugDiv.id = "debug-log";
+    debugDiv.style.marginTop = "10px";
+    debugDiv.style.padding = "8px";
+    debugDiv.style.background = "rgba(0,0,0,0.1)";
+    debugDiv.style.fontSize = "10px";
+    debugDiv.style.fontFamily = "monospace";
+    debugDiv.style.whiteSpace = "pre-wrap";
+    debugDiv.style.maxHeight = "80px";
+    debugDiv.style.overflow = "auto";
+    debugDiv.style.display = "none"; // Hidden by default
 
-if (addPunctuationLabel && addPunctuationCheckbox) {
-  addPunctuationLabel.addEventListener("change", () => {
-    let addPunctuation = addPunctuationCheckbox.checked;
-    parent.postMessage({ pluginMessage: { type: 'update-addPunctuation', addPunctuation: addPunctuation } }, '*')
-  });
-}
+    // Add debug log to the page
+    document.querySelector("#widget").appendChild(debugDiv);
 
-if (closeAfterLabel && closeAfterCheckbox) {
-  closeAfterLabel.addEventListener("change", () => {
-    let closeAfter = closeAfterCheckbox.checked;
-    parent.postMessage({ pluginMessage: { type: 'update-closeAfter', closeAfter: closeAfter } }, '*')
-  });
-}
-
-if (button) {
-  button.addEventListener("click", () => {
-    parent.postMessage({ pluginMessage: { type: 'replace-text', inValue:input.value } }, '*')    
-  });
-}
-
-if (input) {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      parent.postMessage({ pluginMessage: { type: 'replace-text', inValue:input.value } }, '*')        
+    // Helper function to log messages
+    function debugLog(message) {
+        console.log(message);
+        debugDiv.textContent +=
+            new Date().toISOString().substr(11, 8) + ": " + message + "\n";
+        debugDiv.scrollTop = debugDiv.scrollHeight;
     }
-  });
 
-  input.addEventListener("focus", (e) => {
-    e.target.select();
-  });
-}
+    // Toggle debug visibility with Alt+D
+    document.addEventListener("keydown", (e) => {
+        if (e.altKey && e.key === "d") {
+            debugDiv.style.display =
+                debugDiv.style.display === "none" ? "block" : "none";
+        }
+    });
+
+    // Listen for messages from the plugin code
+    onmessage = (event) => {
+        const message = event.data.pluginMessage;
+        debugLog("Received message from plugin: " + JSON.stringify(message));
+
+        if (message.type === "init-preferences") {
+            debugLog("Initializing preferences");
+            // Update checkboxes based on saved preferences
+            closeAfterCheckbox.checked = message.closeAfter;
+            addPunctuationCheckbox.checked = message.addPunctuation;
+            debugLog(
+                `Set checkboxes: closeAfter=${message.closeAfter}, addPunctuation=${message.addPunctuation}`,
+            );
+
+            // Update input field with last saved value
+            if (message.lastInputValue) {
+                input.value = message.lastInputValue;
+                debugLog(`Set input value: ${message.lastInputValue}`);
+            }
+        }
+    };
+
+    if (addPunctuationLabel && addPunctuationCheckbox) {
+        addPunctuationLabel.addEventListener("change", () => {
+            let addPunctuation = addPunctuationCheckbox.checked;
+            debugLog(`Punctuation checkbox changed to: ${addPunctuation}`);
+            parent.postMessage(
+                {
+                    pluginMessage: {
+                        type: "update-addPunctuation",
+                        addPunctuation: addPunctuation,
+                    },
+                },
+                "*",
+            );
+        });
+    }
+
+    if (closeAfterLabel && closeAfterCheckbox) {
+        closeAfterLabel.addEventListener("change", () => {
+            let closeAfter = closeAfterCheckbox.checked;
+            debugLog(`Close after checkbox changed to: ${closeAfter}`);
+            parent.postMessage(
+                {
+                    pluginMessage: {
+                        type: "update-closeAfter",
+                        closeAfter: closeAfter,
+                    },
+                },
+                "*",
+            );
+        });
+    }
+
+    if (button) {
+        button.addEventListener("click", () => {
+            parent.postMessage(
+                {
+                    pluginMessage: {
+                        type: "replace-text",
+                        inValue: input.value,
+                    },
+                },
+                "*",
+            );
+
+            // Save input value when generate button is clicked
+            debugLog(`Saving input value on generate: ${input.value}`);
+            parent.postMessage(
+                {
+                    pluginMessage: {
+                        type: "save-input-value",
+                        inputValue: input.value,
+                    },
+                },
+                "*",
+            );
+        });
+    }
+
+    if (input) {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                parent.postMessage(
+                    {
+                        pluginMessage: {
+                            type: "replace-text",
+                            inValue: input.value,
+                        },
+                    },
+                    "*",
+                );
+
+                // Save input value when user presses Enter
+                debugLog(`Saving input value on Enter: ${input.value}`);
+                parent.postMessage(
+                    {
+                        pluginMessage: {
+                            type: "save-input-value",
+                            inputValue: input.value,
+                        },
+                    },
+                    "*",
+                );
+            }
+        });
+
+        input.addEventListener("focus", (e) => {
+            e.target.select();
+        });
+
+        // Save input value when it changes
+        input.addEventListener("change", () => {
+            debugLog(`Input value changed to: ${input.value}`);
+            parent.postMessage(
+                {
+                    pluginMessage: {
+                        type: "save-input-value",
+                        inputValue: input.value,
+                    },
+                },
+                "*",
+            );
+        });
+    }
 </script>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+    * {
+        box-sizing: border-box;
+    }
 
-html,
-body {
-  font-size: 62.5%;
-  padding: 0;
-  margin: 0;
-}
+    html,
+    body {
+        font-size: 62.5%;
+        padding: 0;
+        margin: 0;
+    }
 
-#widget {
-  background-color: var(--figma-color-bg);
-  border-radius: 0.6rem;
-  padding: 2.1rem 2.4rem;
-  color: white;
-  line-height: 1.3;
-  font-family: Inter, sans-serif;
-  font-feature-settings: "calt", "liga";
-  font-kerning: auto;
-  font-language-override: normal;
-  font-optical-sizing: auto;
-  font-size: 1.2rem;
-  p {
-    margin: 0.8rem 0;
-  }
-  p:first-of-type{margin-top: 0}
-  p:last-of-type {
-    margin-bottom: 0;
-  }
-  #input-area {
-    margin: 1.6rem 0 0;
-    display: flex;
-    align-items: center;
-  }
-  h4 {
-    margin: 0;
-  }
-  #instructions {
-    color: var(--figma-color-text-secondary);
-  }
-  input[type="text"] {
-    width: 100%;
-    flex: 1;
-    margin-right: 0.4rem;
-    border: 0;
-    border-radius: 0.6rem;
-    background-color: var(--figma-color-bg-secondary);
-    padding: .6rem .8rem;
-    color: var(--figma-color-text);
-  }
-  input:focus, button:focus{
-    outline: 1px solid var(--figma-color-border-selected);    
-  }
-  button:focus{
-    background-color: var(--figma-color-bg-brand)
-  }
-  button {
-    border: 0;
-    border-radius: 0.6rem;
-    padding: .6rem .8rem;
-    background-color: var(--figma-color-bg-brand);
-    color: var(--figma-color-text-onbrand);
-    flex-shrink: 0;
-  }
-  #options-area {
-    margin-top: 2rem;
-  }
-}
+    #widget {
+        background-color: var(--figma-color-bg);
+        border-radius: 0.6rem;
+        padding: 2.1rem 2.4rem;
+        color: white;
+        line-height: 1.3;
+        font-family: Inter, sans-serif;
+        font-feature-settings: "calt", "liga";
+        font-kerning: auto;
+        font-language-override: normal;
+        font-optical-sizing: auto;
+        font-size: 1.2rem;
+        p {
+            margin: 0.8rem 0;
+        }
+        p:first-of-type {
+            margin-top: 0;
+        }
+        p:last-of-type {
+            margin-bottom: 0;
+        }
+        #input-area {
+            margin: 1.6rem 0 0;
+            display: flex;
+            align-items: center;
+        }
+        h4 {
+            margin: 0;
+        }
+        #instructions {
+            color: var(--figma-color-text-secondary);
+        }
+        input[type="text"] {
+            width: 100%;
+            flex: 1;
+            margin-right: 0.4rem;
+            border: 0;
+            border-radius: 0.6rem;
+            background-color: var(--figma-color-bg-secondary);
+            padding: 0.6rem 0.8rem;
+            color: var(--figma-color-text);
+        }
+        input:focus,
+        button:focus {
+            outline: 1px solid var(--figma-color-border-selected);
+        }
+        button:focus {
+            background-color: var(--figma-color-bg-brand);
+        }
+        button {
+            border: 0;
+            border-radius: 0.6rem;
+            padding: 0.6rem 0.8rem;
+            background-color: var(--figma-color-bg-brand);
+            color: var(--figma-color-text-onbrand);
+            flex-shrink: 0;
+        }
+        #options-area {
+            margin-top: 2rem;
+        }
+    }
 
-form {
-  margin: 1.2rem 0 0;
-}
+    form {
+        margin: 1.2rem 0 0;
+    }
 
-.form-control {
-  display: grid;
-  grid-template-columns: 2.4rem auto;
-  gap: 0.8rem;
-  align-items: center;
-  color: var(--figma-color-text);
-}
+    .form-control {
+        display: grid;
+        grid-template-columns: 2.4rem auto;
+        gap: 0.8rem;
+        align-items: center;
+        color: var(--figma-color-text);
+    }
 
-.form-control + .form-control {
-  margin-top: .8rem;
-}
+    .form-control + .form-control {
+        margin-top: 0.8rem;
+    }
 
-label {user-select: none;}
+    label {
+        user-select: none;
+    }
 
-input[type="checkbox"] {
-  appearance: none;
-  background-color: var(--figma-color-bg-secondary);
-  margin: 0;
-  font: inherit;
-  color: var(--figma-color-text);
-  width: 2.1rem;
-  height: 2.1rem;
-  border: .1rem solid var(--figma-color-text);
-  border-radius: .1rem;
-  margin-right: 0.4rem;
-  border: 0;
-  border-radius: 0.6rem;
-  background-color: var(--figma-color-bg-secondary);
-  transform: translateY(-0.075rem);
-  display: grid;
-  place-content: center;
-}
+    input[type="checkbox"] {
+        appearance: none;
+        background-color: var(--figma-color-bg-secondary);
+        margin: 0;
+        font: inherit;
+        color: var(--figma-color-text);
+        width: 2.1rem;
+        height: 2.1rem;
+        border: 0.1rem solid var(--figma-color-text);
+        border-radius: 0.1rem;
+        margin-right: 0.4rem;
+        border: 0;
+        border-radius: 0.6rem;
+        background-color: var(--figma-color-bg-secondary);
+        transform: translateY(-0.075rem);
+        display: grid;
+        place-content: center;
+    }
 
-input[type="checkbox"]::before {
-  content: "";
-  width: 1rem;
-  height: 1rem;
-  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-  transform: scale(0);
-  transform-origin: bottom left;
-  transition: 120ms transform ease-in-out;
-  background-color: var(--figma-color-text);
-}
+    input[type="checkbox"]::before {
+        content: "";
+        width: 1rem;
+        height: 1rem;
+        clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        transform: scale(0);
+        transform-origin: bottom left;
+        transition: 120ms transform ease-in-out;
+        background-color: var(--figma-color-text);
+    }
 
-input[type="checkbox"]:checked::before {
-  transform: scale(1);
-}
+    input[type="checkbox"]:checked::before {
+        transform: scale(1);
+    }
 
-/* input[type="checkbox"]:focus {
+    /* input[type="checkbox"]:focus {
   outline: max(2px, 0.15em) solid currentColor;
   outline-offset: max(2px, 0.15em);
 }

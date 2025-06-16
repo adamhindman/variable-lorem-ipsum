@@ -1,7 +1,7 @@
 {
-  "name": "Variable-Length-Lorem-Ipsum-",
+  "name": "variable-length-lorem-ipsum",
   "version": "1.0.0",
-  "description": "Your Figma Plugin",
+  "description": "Figma plugin that generates lorem ipsum text with variable length",
   "main": "code.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
