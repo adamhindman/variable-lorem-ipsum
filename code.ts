@@ -95,6 +95,7 @@ function isSingleFontName(
 figma.ui.onmessage = (msg: {
   type: string;
   inValue: string;
+  inputValue?: string;
   closeAfter: boolean;
   addPunctuation: boolean;
 }) => {
