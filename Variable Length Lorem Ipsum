@@ -1,4 +1,4 @@
-Variable Length Lorem Ipsum 
+Variable Length Lorem Ipsum
 
 Specify a range of lengths for your lorem ipsum text
 
@@ -10,7 +10,3 @@ Enter a single number (e.g., "10") for fixed word count or a range (e.g., "5-10"
 Optionally add punctuation for generated text (default: off).
 Optionally auto-close the plugin after generating text (default: off).
 Supports your system setting for light or dark mode.
-
-Roadmap:
-Save user preferences for future sessions.
-Allow custom text input for generation.
